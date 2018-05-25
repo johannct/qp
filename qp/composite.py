@@ -24,7 +24,7 @@ class composite(object):
         """
         self.components = components
         self.n_components = len(self.components)
-        self.component_range = range(self.n_components)
+        self.component_range = list(range(self.n_components))
 
         coefficients = np.array([component['coefficient'] for component in self.components])
         self.coefficients = coefficients / np.sum(coefficients)

@@ -10,10 +10,10 @@ import scipy.interpolate as spi
 import matplotlib.pyplot as plt
 
 import qp
-import utils as u
-from utils import infty as default_infty
-from utils import epsilon as default_eps
-from utils import lims as default_lims
+from . import utils as u
+from .utils import infty as default_infty
+from .utils import epsilon as default_eps
+from .utils import lims as default_lims
 
 class Ensemble(object):
 
@@ -69,13 +69,13 @@ class Ensemble(object):
         else:
             self.n_procs = pathos.helpers.cpu_count()
         self.pool = Pool(self.n_procs)
-        print('made the pool of '+str(self.n_procs)+' in '+str(timeit.default_timer() - start_time))
+        print(('made the pool of '+str(self.n_procs)+' in '+str(timeit.default_timer() - start_time)))
 
         self.n_pdfs = N
-        self.pdf_range = range(N)
+        self.pdf_range = list(range(N))
 
         if funcform is None and quantiles is None and histogram is None and gridded is None and samples is None:
-            print 'Warning: initializing an Ensemble object without inputs'
+            print('Warning: initializing an Ensemble object without inputs')
             return
 
         if limits is None:
@@ -128,7 +128,7 @@ class Ensemble(object):
 
         start_time = timeit.default_timer()
         self.pdfs = self.pool.map(make_pdfs_helper, self.pdf_range)
-        print('made the catalog in '+str(timeit.default_timer() - start_time))
+        print(('made the catalog in '+str(timeit.default_timer() - start_time)))
 
         return
 
@@ -162,7 +162,7 @@ class Ensemble(object):
             #     logfile.write('sampling pdf '+str(i)+'\n')
                 return self.pdfs[i].sample(N=samps, infty=infty, using=using, vb=False)
             except Exception:
-                print('ERROR: sampling failed on '+str(i)+' because '+str(sys.exc_info()[0]))
+                print(('ERROR: sampling failed on '+str(i)+' because '+str(sys.exc_info()[0])))
 
         self.samples = self.pool.map(sample_helper, self.pdf_range)
 
@@ -233,7 +233,7 @@ class Ensemble(object):
                 return self.pdfs[i].histogramize(binends=binends, N=N,
                                                 binrange=binrange, vb=False)
             except Exception:
-                print('ERROR: histogramization failed on '+str(i)+' because '+str(sys.exc_info()[0]))
+                print(('ERROR: histogramization failed on '+str(i)+' because '+str(sys.exc_info()[0])))
 
         self.histogram = self.pool.map(histogram_helper, self.pdf_range)
         self.histogram = np.swapaxes(np.array(self.histogram), 0, 1)
@@ -269,7 +269,7 @@ class Ensemble(object):
             #     logfile.write('fitting pdf '+str(i)+'\n')
                 return self.pdfs[i].mix_mod_fit(n_components=comps, using=using, vb=False)
             except Exception:
-                print('ERROR: mixture model fitting failed on '+str(i)+' because '+str(sys.exc_info()[0]))
+                print(('ERROR: mixture model fitting failed on '+str(i)+' because '+str(sys.exc_info()[0])))
 
         self.mix_mod = self.pool.map(mixmod_helper, self.pdf_range)
 
@@ -301,7 +301,7 @@ class Ensemble(object):
             #     logfile.write('evaluating pdf '+str(i)+'\n')
                 return self.pdfs[i].evaluate(loc=loc, using=using, norm=norm, vb=vb)
             except Exception:
-                 print('REAL ERROR: evaluation with '+using+' failed on '+str(i)+' because '+str(sys.exc_info()[0]))
+                 print(('REAL ERROR: evaluation with '+using+' failed on '+str(i)+' because '+str(sys.exc_info()[0])))
             # return result
         self.gridded = self.pool.map(evaluate_helper, self.pdf_range)
         self.gridded = np.swapaxes(np.array(self.gridded), 0, 1)
@@ -333,7 +333,7 @@ class Ensemble(object):
             try:
                 return self.pdfs[i].integrate(limits[i], using=using, dx=dx, vb=False)
             except Exception:
-                print('ERROR: integration failed on '+str(i)+' because '+str(sys.exc_info()[0]))
+                print(('ERROR: integration failed on '+str(i)+' because '+str(sys.exc_info()[0])))
 
         integrals = self.pool.map(integrate_helper, self.pdf_range)
 
@@ -427,7 +427,7 @@ class Ensemble(object):
                 assert(pdf.gridded is not None)
                 return qp.PDF(gridded=pdf.gridded, limits=limits, vb=False)
         else:
-            print(using + ' not available; try a different parametrization.')
+            print((using + ' not available; try a different parametrization.'))
             return
 
         D = int((limits[-1] - limits[0]) / dx)
@@ -500,7 +500,7 @@ class Ensemble(object):
             def Q_func(pdfs):
                 return qp.PDF(quantiles=pdf.gridded, vb=False)
         else:
-            print(using + ' not available; try a different parametrization.')
+            print((using + ' not available; try a different parametrization.'))
             return
 
         D = int((limits[-1] - limits[0]) / dx)
